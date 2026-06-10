@@ -26,5 +26,16 @@ export const SFO: Airport = {
   ],
 };
 
-/** Airports drawn on the map (currently just SFO; easy to extend). */
-export const AIRPORTS: Airport[] = [SFO];
+// Colorado Springs Airport. Coordinates from OurAirports (KCOS).
+export const COS: Airport = {
+  icao: "KCOS",
+  name: "COS",
+  runways: [
+    { leIdent: "12", heIdent: "30", le: [38.8232, -104.714996], he: [38.807098, -104.695], widthFt: 200 },
+    { leIdent: "17L", heIdent: "35R", le: [38.816101, -104.685997], he: [38.778999, -104.685997], widthFt: 200 },
+    { leIdent: "17R", heIdent: "35L", le: [38.8241, -104.716003], he: [38.7938, -104.716003], widthFt: 200 },
+  ],
+};
+
+/** Airports drawn on the map (easy to extend). */
+export const AIRPORTS: Airport[] = [SFO, COS];

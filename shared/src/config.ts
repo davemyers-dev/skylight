@@ -122,13 +122,6 @@ export interface TrackerConfig {
      * spikes; 0 = off.
      */
     maxAccelDps2: number;
-    /**
-     * Keep the sweep continuous: when the feedforward (predicted plane) rate
-     * exceeds this many deg/s, the drive is floored at it so the reactive P/I
-     * and deadband can't STOP or REVERSE a moving axis (the ~1 Hz stop-go).
-     * Below it, near-still targets rest normally. 0 = off.
-     */
-    minSweepDps: number;
   };
   zoom: {
     auto: boolean;
@@ -319,16 +312,16 @@ export interface Config {
 export const DEFAULT_CONFIG: Config = {
   // Default center: San Francisco International (SFO). Set this to your own
   // location — ideally where you'll be looking up at the ceiling.
-  centerLat: 37.6213,
-  centerLon: -122.379,
-  locationName: "San Francisco International",
-  radiusMiles: 3,
+  centerLat: 38.917,
+  centerLon: -104.688,
+  locationName: "Colorado Springs",
+  radiusMiles: 12,
   locationProfiles: [],
 
   radioUrl: "http://localhost:8080/data/aircraft.json",
 
   rotationDeg: 0,
-  mirrorX: true,
+  mirrorX: false,
   mirrorY: false,
   labelRotationDeg: 0,
   // Default to the flat ground plan (the original look); "sky" is opt-in.
@@ -381,14 +374,14 @@ export const DEFAULT_CONFIG: Config = {
   compass: true,
   highlightEmergency: true,
   showAirport: true,
-  showHud: false,
+  showHud: true,
 
   showStars: true,
-  showSun: true,
+  showSun: false,
   showMoon: true,
   showSatellites: true,
   satelliteLabels: false,
-  showPlanets: true,
+  showPlanets: false,
   starMagLimit: 2.6,
   starLabelMagLimit: 0.3,
   skyTimeOffsetMin: 0,
@@ -451,7 +444,6 @@ export const DEFAULT_CONFIG: Config = {
       posSmoothing: 0.7,
       errSmoothing: 0.5,
       maxAccelDps2: 80,
-      minSweepDps: 0.6,
     },
     zoom: {
       auto: true,
@@ -470,22 +462,20 @@ export const DEFAULT_CONFIG: Config = {
       applyCorrection: false,
       lockWide: true,
       autofocusOnZoom: true,
-      // Motion-compensated detection is cheap (no net, no contrast machinery),
-      // so the loop runs fast: ~10 Hz gives a fresh, low-lag error signal for a
-      // dead-set lock, and corrections glide on faster than the old 1.2°/s.
-      intervalMs: 100,
+      intervalMs: 250,
       encodeLagMs: 350,
-      correctionSlewDps: 2.5,
+      correctionSlewDps: 1.2,
       autoCalibrate: true,
       net: {
-        // Retired: the YOLOX net (generic COCO, ~266 ms/inference) was the wrong
-        // tool for a speck on sky AND a CPU hog. Camera-motion-compensated
-        // detection replaced it. Left here (disabled) so old configs merge.
-        enabled: false,
+        enabled: true,
         modelPath: "tracker/models/yolox_nano.onnx",
         inputSize: 416,
         scoreThresh: 0.3,
-        classId: 4,
+        classId: 4, // COCO "airplane"
+        // ~266 ms/inference on the Pi 5 (2 threads). Every 3rd vision tick
+        // (~0.75–1 Hz) keeps the 3 s semantic bonus fresh without starving
+        // the TV's ffmpeg/chromium. Raise it if the Pi runs hot; net.enabled
+        // = false drops the whole layer back to classical-only.
         everyNTicks: 3,
       },
     },
